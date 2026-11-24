@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url="https://jarvis-room.web.app/"
+          url="https://jarvis-studio-mokshith.web.app/"
           live_file="$(mktemp)"
           trap 'rm -f "$live_file"' EXIT
 
