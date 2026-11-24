@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "jarvis-studio-f0423"
+  },
+  "targets": {
+    "jarvis-studio-f0423": {
+      "hosting": {
+        "jarvis-room": [
+          "jarvis-studio-mokshith"
+        ]
+      }
+    }
   }
 }
