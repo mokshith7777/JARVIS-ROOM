@@ -83,3 +83,25 @@ jobs:
           projectId: jarvis-studio-f0423
           target: jarvis-room
           channelId: live
+
+      - name: Verify live Firebase content matches this GitHub commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://jarvis-room.web.app/"
+          live_file="$(mktemp)"
+          trap 'rm -f "$live_file"' EXIT
+
+          for attempt in {1..6}; do
+            if curl --fail --silent --show-error --location --compressed "${url}?github_deploy=${GITHUB_SHA}" -o "$live_file"; then
+              if cmp -s public/index.html "$live_file"; then
+                echo "Firebase Hosting is serving the exact public/index.html from commit ${GITHUB_SHA}."
+                exit 0
+              fi
+            fi
+            echo "Live content has not matched yet (attempt ${attempt}/6). Retrying..."
+            sleep 5
+          done
+
+          echo "::error::Firebase Hosting did not serve the exact public/index.html from this GitHub commit."
+          exit 1
