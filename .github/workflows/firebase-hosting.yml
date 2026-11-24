@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   deploy:
+    # Skip deployment until the website entry point has been uploaded.
+    if: ${{ hashFiles('public/index.html') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
