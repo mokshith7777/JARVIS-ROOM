@@ -11,8 +11,7 @@ permissions:
 
 jobs:
   deploy:
-    # Skip deployment until the website entry point has been uploaded.
-    if: ${{ hashFiles('public/index.html') != '' }}
+    # Deploy the static site on every push to main.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
