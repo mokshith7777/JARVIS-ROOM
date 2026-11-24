@@ -23,4 +23,5 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JARVIS_STUDIO_F0423 }}
           projectId: jarvis-studio-f0423
+          target: jarvis-room
           channelId: live
