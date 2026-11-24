@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "jarvis-studio-mokshith",
+    "target": "jarvis-room",
     "public": "public",
     "ignore": [
       "firebase.json",
