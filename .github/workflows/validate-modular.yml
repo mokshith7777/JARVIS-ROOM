@@ -1,0 +1,27 @@
+name: Validate modular JARVIS ROOM
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Assemble external intro video
+        run: node scripts/assemble-media.mjs
+      - name: Validate modules and configuration
+        run: |
+          node --check public/js/main.js
+          node --check scripts/assemble-media.mjs
+          node -e 'JSON.parse(require("node:fs").readFileSync("public/config/studio.json","utf8"))'
+          test -s public/index.html
+          test -s public/styles/studio.css
+          test -s public/assets/intro.mp4
+          grep -q 'type="module" src="/js/main.js"' public/index.html
+          grep -q 'href="/styles/studio.css"' public/index.html
+          echo "JARVIS ROOM modular files passed validation."
