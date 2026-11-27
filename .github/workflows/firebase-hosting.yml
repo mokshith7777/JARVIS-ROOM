@@ -36,11 +36,18 @@ jobs:
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
-      - name: Validate website files and inline JavaScript
+      - name: Assemble external intro video
+        run: node scripts/assemble-media.mjs
+
+      - name: Validate website files and JavaScript modules
         shell: bash
         run: |
           set -euo pipefail
           test -s public/index.html || { echo "::error::public/index.html is missing or empty."; exit 1; }
+          test -s public/assets/intro.mp4 || { echo "::error::intro.mp4 was not assembled."; exit 1; }
+          node --check public/js/main.js
+          node --check scripts/assemble-media.mjs
+          node -e 'JSON.parse(require("node:fs").readFileSync("public/config/studio.json","utf8"))'
           node <<'NODE'
           const fs = require('node:fs');
           const vm = require('node:vm');
