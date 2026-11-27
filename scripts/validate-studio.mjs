@@ -10,13 +10,24 @@ const video=Buffer.from(encoded,'base64');
 if(video.length<1000000||video.toString('ascii',4,8)!=='ftyp') throw new Error('Intro video chunks do not form a valid MP4.');
 fs.mkdirSync(path.join(root,'public/assets'),{recursive:true});
 fs.writeFileSync(path.join(root,'public/assets/intro.mp4'),video);
+const imageSources=[
+  ['source-assets/hall-left.jpg.b64','public/assets/hall-left.jpg'],
+  ['source-assets/hall-right.jpg.b64','public/assets/hall-right.jpg']
+];
+for(const [sourceFile,targetFile] of imageSources){
+  const imageData=Buffer.from(read(sourceFile).replace(/\s+/g,''),'base64');
+  if(imageData.length<10000||imageData[0]!==0xff||imageData[1]!==0xd8||imageData[2]!==0xff) {
+    throw new Error('Invalid gallery JPEG source: '+sourceFile);
+  }
+  fs.writeFileSync(path.join(root,targetFile),imageData);
+}
 
 const required=[
  'public/index.html','public/styles/studio.css','public/js/main.js','public/js/config.js',
  'public/js/rooms.js','public/js/audio.js','public/js/voice.js','public/js/checkout.js',
  'public/js/transitions.js','public/js/arc-reactor.js','public/config/studio.json',
  'public/shaders/arc-reactor.vert','public/shaders/arc-reactor.frag',
- 'public/shaders/portal.vert','public/shaders/portal.frag','public/assets/intro.mp4'
+ 'public/shaders/portal.vert','public/shaders/portal.frag','public/assets/intro.mp4',\n 'public/assets/hall-left.jpg','public/assets/hall-right.jpg'
 ];
 for(const file of required) if(!fs.existsSync(path.join(root,file))) throw new Error('Missing required file: '+file);
 const html=read('public/index.html');
