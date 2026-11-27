@@ -1,0 +1,2 @@
+precision highp float; uniform float uTime; uniform float uProgress; uniform vec2 uResolution; varying vec2 vUv;
+void main(){vec2 p=(vUv-.5)*vec2(uResolution.x/uResolution.y,1.);float r=length(p),a=atan(p.y,p.x);float edge=.36-uProgress*.42;float ring=exp(-abs(r-edge)*55.);float scan=.5+.5*sin(vUv.y*900.+uTime*7.);float spiral=.5+.5*sin(a*12.-r*45.+uTime*3.);vec3 c=mix(vec3(0.,.9,1.),vec3(.18,.25,1.),spiral)*ring*(.72+scan*.28);gl_FragColor=vec4(c,clamp(ring*(1.-uProgress*.35),0.,1.));}
