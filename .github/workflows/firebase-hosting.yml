@@ -1,63 +1,32 @@
 name: Deploy to Firebase Hosting
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
 permissions:
-  contents: write
-
+  contents: read
 concurrency:
   group: firebase-hosting-production
   cancel-in-progress: false
-
 jobs:
   deploy:
     name: Validate and deploy JARVIS ROOM
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Restore latest uploaded website as the public entry point
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate modular website and assemble intro video
+        run: node scripts/validate-studio.mjs
+      - name: Check JavaScript module syntax
         shell: bash
         run: |
           set -euo pipefail
-          source_file="public/index (2).html"
-          if [ -s "$source_file" ]; then
-            cp -- "$source_file" public/index.html
-            rm -- "$source_file"
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public/index.html "$source_file"
-            git commit -m "Restore latest JARVIS ROOM public website entry point"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
-
-      - name: Validate website files and inline JavaScript
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -s public/index.html || { echo "::error::public/index.html is missing or empty."; exit 1; }
-          node <<'NODE'
-          const fs = require('node:fs');
-          const vm = require('node:vm');
-          const html = fs.readFileSync('public/index.html', 'utf8');
-          if (!/<!doctype html>/i.test(html)) throw new Error('public/index.html is missing its HTML doctype.');
-          if (!/<title[^>]*>\s*[^<]+\s*<\/title>/i.test(html)) throw new Error('public/index.html is missing a non-empty title.');
-          const scripts = [...html.matchAll(/<script(?![^>]*\bsrc\s*=)[^>]*>([\s\S]*?)<\/script\s*>/gi)];
-          let checked = 0;
-          for (const [index, match] of scripts.entries()) {
-            const source = match[1].trim();
-            if (!source) continue;
-            new vm.Script(source, { filename: `public/index.html:inline-script-${index + 1}` });
-            checked++;
-          }
-          console.log(`Website file validated; ${checked} inline script(s) passed syntax checks.`);
-          NODE
-
+          for file in public/js/*.js; do node --check --input-type=module < "$file"; done
       - name: Validate Firebase service-account secret
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JARVIS_STUDIO_F0423 }}
@@ -65,32 +34,19 @@ jobs:
         run: |
           node <<'NODE'
           const raw = process.env.FIREBASE_SERVICE_ACCOUNT || '';
-          if (!raw.trim()) {
-            console.error('::error::Missing repository secret FIREBASE_SERVICE_ACCOUNT_JARVIS_STUDIO_F0423.');
-            process.exit(1);
-          }
+          if (!raw.trim()) { console.error('::error::Missing repository secret FIREBASE_SERVICE_ACCOUNT_JARVIS_STUDIO_F0423.'); process.exit(1); }
           let account;
-          try {
-            account = JSON.parse(raw);
-          } catch {
-            console.error('::error::Firebase secret is not valid raw JSON. Replace it with the complete contents of the downloaded Firebase service-account .json file. Do not add quotes, Markdown fences, or base64 encoding.');
-            process.exit(1);
-          }
-          const valid =
-            account &&
-            account.type === 'service_account' &&
+          try { account = JSON.parse(raw); }
+          catch { console.error('::error::Firebase secret is not valid raw JSON.'); process.exit(1); }
+          const valid = account && account.type === 'service_account' &&
             account.project_id === 'jarvis-studio-f0423' &&
             typeof account.client_email === 'string' &&
             account.client_email.endsWith('.iam.gserviceaccount.com') &&
             typeof account.private_key === 'string' &&
             account.private_key.includes('BEGIN PRIVATE KEY');
-          if (!valid) {
-            console.error('::error::Firebase secret is valid JSON but is not a complete service-account key for project jarvis-studio-f0423.');
-            process.exit(1);
-          }
-          console.log('Firebase service-account JSON structure and project ID validated. Secret contents were not printed.');
+          if (!valid) { console.error('::error::Firebase secret is not a complete service-account key for jarvis-studio-f0423.'); process.exit(1); }
+          console.log('Firebase service-account structure and project ID validated without printing the secret.');
           NODE
-
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -98,7 +54,6 @@ jobs:
           projectId: jarvis-studio-f0423
           target: jarvis-room
           channelId: live
-
       - name: Verify live Firebase content matches this GitHub commit
         shell: bash
         run: |
@@ -106,17 +61,15 @@ jobs:
           url="https://jarvis-studio-mokshith.web.app/"
           live_file="$(mktemp)"
           trap 'rm -f "$live_file"' EXIT
-
           for attempt in {1..6}; do
             if curl --fail --silent --show-error --location --compressed "${url}?github_deploy=${GITHUB_SHA}" -o "$live_file"; then
               if cmp -s public/index.html "$live_file"; then
-                echo "Firebase Hosting is serving the exact public/index.html from commit ${GITHUB_SHA}."
+                echo "Firebase Hosting serves the exact index.html from commit ${GITHUB_SHA}."
                 exit 0
               fi
             fi
             echo "Live content has not matched yet (attempt ${attempt}/6). Retrying..."
             sleep 5
           done
-
-          echo "::error::Firebase Hosting did not serve the exact public/index.html from this GitHub commit."
+          echo "::error::Firebase Hosting did not serve the exact index.html from this GitHub commit."
           exit 1
