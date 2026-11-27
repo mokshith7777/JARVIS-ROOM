@@ -1,0 +1,42 @@
+{
+  "payment": {
+    "upiId": "9391050634@ibl",
+    "originalPriceDisplay": "₹49",
+    "priceDisplay": "₹19",
+    "jarvisProApkUrl": "https://github.com/mokshith7777/Jarvis-android-/releases/latest",
+    "timeJApkUrl": "https://github.com/mokshith7777/Jarvis-android-/releases"
+  },
+  "screens": [
+    {
+      "tag": "MAIN MONITOR · 01",
+      "title": "3D Portfolio",
+      "url": "https://mokshith7777.github.io/portfolio-3d/",
+      "displayUrl": "mokshith7777.github.io/portfolio-3d",
+      "cta": "Open 3D Portfolio ↗",
+      "embed": true,
+      "body": "Interactive 3D portfolio hosted on GitHub Pages."
+    },
+    {
+      "tag": "SIDE TABLET · 02",
+      "title": "JARVIS AI Portfolio",
+      "url": "https://mokshith7777.github.io/jarvis-ai-portfolio/",
+      "displayUrl": "mokshith7777.github.io/jarvis-ai-portfolio",
+      "cta": "Open JARVIS AI Portfolio ↗",
+      "embed": true,
+      "body": "JARVIS AI showcase and interactive project portfolio."
+    },
+    {
+      "tag": "LAPTOP · 03",
+      "title": "@mokxith_jarvis · Instagram",
+      "url": "https://www.instagram.com/mokxith_jarvis?bqrl=MTF3bWFycmprOWlobA==",
+      "displayUrl": "instagram.com/mokxith_jarvis",
+      "cta": "Open Instagram Profile ↗",
+      "embed": false,
+      "isIg": true,
+      "body": "Follow @mokxith_jarvis on Instagram for JARVIS builds, 3D room updates, and studio previews."
+    }
+  ],
+  "media": {
+    "introVideo": "/assets/intro.mp4"
+  }
+}
