@@ -1,0 +1,2 @@
+precision highp float; uniform float uTime; uniform vec2 uResolution; varying vec2 vUv;
+void main(){vec2 p=(vUv-.5)*vec2(uResolution.x/uResolution.y,1.);float r=length(p),a=atan(p.y,p.x);float ring=exp(-abs(r-.28)*48.);float pulse=.72+.28*sin(uTime*2.4+a*6.);float rays=.5+.5*cos(a*18.+uTime*1.7);float glow=exp(-r*5.);vec3 c=vec3(0.,.82,1.)*(ring*pulse+glow*.18)+vec3(.05,.24,.8)*(rays*ring*.35);gl_FragColor=vec4(c,clamp(ring*.9+glow*.12,0.,1.));}
