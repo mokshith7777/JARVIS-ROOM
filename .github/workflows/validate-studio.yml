@@ -1,0 +1,28 @@
+name: Validate JARVIS ROOM
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    name: Validate modular static studio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate project structure and media
+        run: node scripts/validate-studio.mjs
+      - name: Check JavaScript module syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in public/js/*.js; do node --check --input-type=module < "$file"; done
+          node --check scripts/validate-studio.mjs
